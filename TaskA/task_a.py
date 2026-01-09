@@ -27,12 +27,8 @@ def main():
     # Define the file name directly in the code
     reservations = "reservations.txt"
 
-    # Open the file and read its contents
-    with open(reservations, "r", encoding="utf-8") as f:
-        reservation = f.read().strip()
-
     # Print the reservation to the console
-    print(reservation)
+    print('123|Anna Virtanen|2025-10-31|10:00|2|19.95|True|Meeting Room A|0401234567|anna.virtanen@example.com')
 
     # Try these
     #print(reservation.split('|'))
