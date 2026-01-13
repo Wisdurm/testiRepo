@@ -77,8 +77,9 @@ def fetch_reservations(reservation_file: str) -> list[list]:
     )
     with open(reservation_file, "r", encoding="utf-8") as f:
         for line in f:
-            fields = line.split("|")
-            reservations.append(convert_reservation_data(fields))
+            if len(line) > 1:
+                fields = line.split("|")
+                reservations.append(convert_reservation_data(fields))
     return reservations
 
 def confirmed_reservations(reservations: list[list]) -> None:
