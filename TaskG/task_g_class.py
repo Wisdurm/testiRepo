@@ -1,10 +1,12 @@
-# Copyright (c) 2025 Ville Heikkiniemi
+# Copyright (c) 2026 Ville Heikkiniemi, Luka Hietala, Luukas Kola
 #
 # This code is licensed under the MIT License.
 # You are free to use, modify, and distribute this code,
 # provided that the original copyright notice is retained.
 #
 # See LICENSE file in the project root for full license information.
+
+# Modified by nnn according to given task
 
 """
 A program that prints reservation information according to requirements
@@ -20,8 +22,32 @@ int | str | str | str | date | time | int | float | bool | str | datetime
 
 from datetime import datetime
 
+class Reservation:
+    def __init__(self, reservation_id, name, email, phone,
+                 date, time, duration, price,
+                 confirmed, resource, created):
+        self.reservation_id = reservation_id
+        self.name = name
+        self.email = email
+        self.phone = phone
+        self.date = date
+        self.time = time
+        self.duration = duration
+        self.price = price
+        self.confirmed = confirmed
+        self.resource = resource
+        self.created = created
 
-def convert_reservation_data(reservation: list) -> list:
+    def is_confirmed(self):
+        return self.confirmed
+
+    def is_long(self):
+        return self.duration >= 3
+
+    def total_price(self):
+        return self.duration * self.price
+
+def convert_reservation_data(reservation: list) -> Reservation:
     """
     Convert data types to meet program requirements
 
@@ -29,26 +55,25 @@ def convert_reservation_data(reservation: list) -> list:
      reservation (list): Unconverted reservation -> 11 columns 
 
     Returns:
-     converted (list): Converted data types
+     Reservation object: Converted data types
     """
-    converted = []
     # Convert the first element = reservation[0]
-    converted.append(int(reservation[0]))  # reservationId (str -> int)
+    r_id: int = int(reservation[0])  # reservationId (str -> int)
     # And continue from here
-    converted.append(str(reservation[1]))  # name (str)
-    converted.append(str(reservation[2]))  # email (str)
-    converted.append(str(reservation[3]))  # phone (str)
-    converted.append(datetime.strptime(reservation[4], "%Y-%m-%d").date())  # reservationDate (date)
-    converted.append(datetime.strptime(reservation[5], "%H:%M").time())  # reservationTime (time)
-    converted.append(int(reservation[6]))  # durationHours (int)
-    converted.append(float(reservation[7]))  # price (float)
-    converted.append(True if reservation[8].strip() == 'True' else False)  # confirmed (bool)
-    converted.append(str(reservation[9]))  # reservedResource (str)
-    converted.append(datetime.strptime(str(reservation[10]).strip(), "%Y-%m-%d %H:%M:%S"))  # createdAt (datetime)
-    return converted
+    name:str = str(reservation[1])  # name (str)
+    email:str = str(reservation[2])  # email (str)
+    phone:str = str(reservation[3])  # phone (str)
+    date:datime.date = datetime.strptime(reservation[4], "%Y-%m-%d").date()  # reservationDate (date)
+    time:datetime.time = datetime.strptime(reservation[5], "%H:%M").time()  # reservationTime (time)
+    duration:int = int(reservation[6])  # durationHours (int)
+    price:float = float(reservation[7])  # price (float)
+    confirmed:bool = True if reservation[8].strip() == 'True' else False  # confirmed (bool)
+    reservedResource:str = str(reservation[9])  # reservedResource (str)
+    created: datetime = datetime.strptime(str(reservation[10]).strip(), "%Y-%m-%d %H:%M:%S")  # createdAt (datetime)
+    return Reservation(r_id, name, email, phone, date, time, duration, price, confirmed, reservedResource, created)
 
 
-def fetch_reservations(reservation_file: str) -> list[list]:
+def fetch_reservations(reservation_file: str) -> list[Reservation]:
     """
     Reads reservations from a file and returns the reservations converted
     You don't need to modify this function!
@@ -82,7 +107,7 @@ def fetch_reservations(reservation_file: str) -> list[list]:
                 reservations.append(convert_reservation_data(fields))
     return reservations
 
-def confirmed_reservations(reservations: list[list]) -> None:
+def confirmed_reservations(reservations: list[Reservation]) -> None:
     """
     Print confirmed reservations
 
@@ -90,10 +115,10 @@ def confirmed_reservations(reservations: list[list]) -> None:
      reservations (list): Reservations
     """
     for reservation in reservations[1:]:
-        if reservation[8]: # If confirmed
-            print(f'- {reservation[1]}, {reservation[-2]}, {reservation[4].strftime("%d.%m.%Y")} at {reservation[5].strftime("%H.%M")}')
+        if reservation.is_confirmed(): # If confirmed
+            print(f'- {reservation.name}, {reservation.resource}, {reservation.date.strftime("%d.%m.%Y")} at {reservation.time.strftime("%H.%M")}')
 
-def long_reservations(reservations : list[list]) -> None:
+def long_reservations(reservations : list[Reservation]) -> None:
     """
     Print long reservations
 
@@ -101,11 +126,11 @@ def long_reservations(reservations : list[list]) -> None:
      reservations (list): Reservations
     """
     for reservation in reservations[1:]:
-        if reservation[6] >= 3: # If long
-            print(f'- {reservation[1]}, {reservation[4].strftime("%d.%m.%Y")} at {reservation[5].strftime("%H.%M")}, duration {reservation[6]} h, {reservation[-2]}')
+        if reservation.is_long(): # If long
+            print(f'- {reservation.name}, {reservation.date.strftime("%d.%m.%Y")} at {reservation.time.strftime("%H.%M")}, duration {reservation.duration} h, {reservation.resource}')
 
 
-def confirmation_statuses(reservations: list[list]) -> None:
+def confirmation_statuses(reservations: list[Reservation]) -> None:
     """
     Print confirmation statuses
 
@@ -113,29 +138,29 @@ def confirmation_statuses(reservations: list[list]) -> None:
      reservations (list): Reservations
     """
     for reservation in reservations[1:]:
-        name : str = reservation[1]
-        confirmed : bool = reservation[8]
+        name : str = reservation.name
+        confirmed : bool = reservation.is_confirmed()
 
         print(f'{name} → {"Confirmed" if confirmed else "NOT Confirmed"}')
 
-def confirmation_summary(reservations: list[list]) -> None:
+def confirmation_summary(reservations: list[Reservation]) -> None:
     """
     Print confirmation summary
 
     Parameters:
      reservations (list): Reservations
     """
-    confirmed : int = len([x for x in reservations[1:] if x[8]])
-    print(f'- Confirmed reservations: {confirmed} pcs\n- Not confirmed reservations: {len(reservations[1:]) - confirmed} pcs')
+    confirmed : int = len([x for x in reservations[1:] if x.is_confirmed()])
+    print(f'- Confirmed reservations: {confirmed} pcs\n- Not confirmed reservations: {len(reservations) - confirmed} pcs')
 
-def total_revenue(reservations: list[list]) -> None:
+def total_revenue(reservations: list[Reservation]) -> None:
     """
     Print total revenue
 
     Parameters:
      reservations (list): Reservations
     """
-    revenue : float = sum([x[7] for x in reservations[1:]])
+    revenue : float = sum([x.price for x in reservations[1:]])
     print(f'Total revenue from confirmed reservations: {revenue:.2f} €'.replace('.', ','))
 
 def main():
