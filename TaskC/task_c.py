@@ -135,7 +135,7 @@ def total_revenue(reservations: list[list]) -> None:
     Parameters:
      reservations (list): Reservations
     """
-    revenue : float = sum([x[7] for x in reservations[1:]] if x[8])
+    revenue : float = sum([x[7] for x in reservations[1:] if x[8]])
     print(f'Total revenue from confirmed reservations: {revenue:.2f} €'.replace('.', ','))
 
 def main():
